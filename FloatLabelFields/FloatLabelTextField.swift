@@ -173,7 +173,7 @@ import UIKit
 		title.frame = CGRect(x:x, y:title.frame.origin.y, width:title.frame.size.width, height:title.frame.size.height)
 	}
 	
-	private func showTitle(animated:Bool) {
+	func showTitle(animated:Bool) {
 		let dur = animated ? animationDuration : 0
 		UIView.animateWithDuration(dur, delay:0, options: UIViewAnimationOptions.BeginFromCurrentState|UIViewAnimationOptions.CurveEaseOut, animations:{
 				// Animation
@@ -184,7 +184,7 @@ import UIKit
 			}, completion:nil)
 	}
 	
-	private func hideTitle(animated:Bool) {
+	func hideTitle(animated:Bool) {
 		let dur = animated ? animationDuration : 0
 		UIView.animateWithDuration(dur, delay:0, options: UIViewAnimationOptions.BeginFromCurrentState|UIViewAnimationOptions.CurveEaseIn, animations:{
 			// Animation
