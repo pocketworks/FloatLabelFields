@@ -88,6 +88,8 @@ import UIKit
 		super.init(frame:frame)
 		setup()
 	}
+    
+    var canShowTitleAlways = false
 	
 	// MARK:- Overrides
 	override func layoutSubviews() {
@@ -99,8 +101,12 @@ import UIKit
 		} else {
 			title.textColor = titleTextColour
 		}
+        
+        if !text.isEmpty {
+            clearErrorUI()
+        }
 		// Should we show or hide the title label?
-		if text.isEmpty {
+		if text.isEmpty && !canShowTitleAlways {
 			// Hide
 			hideTitle(isResp)
 		} else {
@@ -162,7 +168,7 @@ import UIKit
 		return max(0, floor(bounds.size.height - font.lineHeight - 4.0))
 	}
 	
-	private func setTitlePositionForTextAlignment() {
+    func setTitlePositionForTextAlignment() {
 		var r = textRectForBounds(bounds)
 		var x = r.origin.x
 		if textAlignment == NSTextAlignment.Center {
@@ -170,7 +176,7 @@ import UIKit
 		} else if textAlignment == NSTextAlignment.Right {
 			x = r.origin.x + r.size.width - title.frame.size.width
 		}
-		title.frame = CGRect(x:x, y:title.frame.origin.y, width:title.frame.size.width, height:title.frame.size.height)
+		title.frame = CGRect(x:x, y:title.frame.origin.y, width:frame.size.width, height:title.frame.size.height)
 	}
 	
 	func showTitle(animated:Bool) {
@@ -194,4 +200,48 @@ import UIKit
 			self.title.frame = r
 			}, completion:nil)
 	}
+    
+    var oldTitleFontSize: CGFloat?
+    var originalTitleActiveColor: UIColor?
+    var originalTitleColor: UIColor?
+    
+    func setErrorUI() {
+        if let fieldName  = placeholder {
+            if oldTitleFontSize == nil {
+                if let fSize = title.font?.pointSize {
+                    oldTitleFontSize = fSize
+                }
+            }
+            title.text = "\(fieldName) can't be blank"
+            title.font = title.font.fontWithSize(6)
+        }
+        
+        if originalTitleColor == nil {
+            originalTitleColor = titleTextColour.copy() as? UIColor
+        }
+        if originalTitleActiveColor == nil {
+            originalTitleActiveColor = titleActiveTextColour.copy() as? UIColor
+        }
+        titleActiveTextColour = UIColor.redColor()
+        titleTextColour = UIColor.redColor()
+        let isResp = isFirstResponder()
+        canShowTitleAlways = true
+        showTitle(isResp)
+        
+    }
+    
+    func clearErrorUI() {
+        if let oldSize = oldTitleFontSize {
+            title.font = title.font.fontWithSize(oldSize)
+        }
+        if let oldColor = originalTitleColor {
+            titleTextColour = oldColor
+        }
+        if let oldActiveColor = originalTitleActiveColor {
+            titleActiveTextColour = oldActiveColor
+        }
+        title.text = self.placeholder!
+        canShowTitleAlways = false
+    }
+    
 }
