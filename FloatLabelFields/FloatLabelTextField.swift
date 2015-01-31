@@ -257,14 +257,21 @@ import UIKit
         // check all the custom validators
 
         for (message,validator) in validators {
+            //  check the predicate
             if (validator as? (() -> Bool) != nil) {
                 hasError = !(validator as () -> Bool)()
-                if hasError {
-                    setCustomError(message)
-                    return
-                }
+            } else {
+                // check the regex
+                let regex = validator as? NSRegularExpression
+                hasError = !(regex?.matchesInString(self.text, options: nil, range: NSMakeRange(0, countElements(self.text))) != nil)
             }
+            if hasError {
+                setCustomError(message)
+                return
+            }
+
         }
+
 
         let isResp = isFirstResponder()
         if hasError {
