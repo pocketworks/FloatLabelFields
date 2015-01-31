@@ -14,234 +14,267 @@
 
 import UIKit
 
-@IBDesignable class FloatLabelTextField: UITextField {
-	let animationDuration = 0.3
-	var title = UILabel()
-	
-	// MARK:- Properties
-	override var accessibilityLabel:String! {
-		get {
-			if text.isEmpty {
-				return title.text
-			} else {
-				return text
-			}
-		}
-		set {
-			self.accessibilityLabel = newValue
-		}
-	}
-	
-	override var placeholder:String? {
-		didSet {
-			title.text = placeholder
-			title.sizeToFit()
-		}
-	}
-	
-	override var attributedPlaceholder:NSAttributedString? {
-		didSet {
-			title.text = attributedPlaceholder?.string
-			title.sizeToFit()
-		}
-	}
-	
-	var titleFont:UIFont = UIFont.systemFontOfSize(12.0) {
-		didSet {
-			title.font = titleFont
-		}
-	}
-	
-	@IBInspectable var hintYPadding:CGFloat = 0.0
+@IBDesignable class FloatLabelTextField: UITextField,UITextFieldDelegate {
+    let animationDuration = 0.3
+    var title = UILabel()
+    var hasError = false
+    private var hasShownError = false
+    private var originalPlaceHolderText: String?
 
-	@IBInspectable var titleYPadding:CGFloat = 0.0 {
-		didSet {
-			var r = title.frame
-			r.origin.y = titleYPadding
-			title.frame = r
-		}
-	}
-	
-	@IBInspectable var titleTextColour:UIColor = UIColor.grayColor() {
-		didSet {
-			if !isFirstResponder() {
-				title.textColor = titleTextColour
-			}
-		}
-	}
-	
-	@IBInspectable var titleActiveTextColour:UIColor! {
-		didSet {
-			if isFirstResponder() {
-				title.textColor = titleActiveTextColour
-			}
-		}
-	}
-	
-	// MARK:- Init
-	required init(coder aDecoder:NSCoder) {
-		super.init(coder:aDecoder)
-		setup()
-	}
-	
-	override init(frame:CGRect) {
-		super.init(frame:frame)
-		setup()
-	}
-    
-    var canShowTitleAlways = false
-	
-	// MARK:- Overrides
-	override func layoutSubviews() {
-		super.layoutSubviews()
-		setTitlePositionForTextAlignment()
-		let isResp = isFirstResponder()
-		if isResp && !text.isEmpty {
-			title.textColor = titleActiveTextColour
-		} else {
-			title.textColor = titleTextColour
-		}
-        
-        if !text.isEmpty {
-            clearErrorUI()
-        }
-		// Should we show or hide the title label?
-		if text.isEmpty && !canShowTitleAlways {
-			// Hide
-			hideTitle(isResp)
-		} else {
-			// Show
-			showTitle(isResp)
-		}
-	}
-	
-	override func textRectForBounds(bounds:CGRect) -> CGRect {
-		var r = super.textRectForBounds(bounds)
-		if !text.isEmpty {
-			var top = ceil(title.font.lineHeight + hintYPadding)
-			top = min(top, maxTopInset())
-			r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
-		}
-		return CGRectIntegral(r)
-	}
-	
-	override func editingRectForBounds(bounds:CGRect) -> CGRect {
-		var r = super.editingRectForBounds(bounds)
-		if !text.isEmpty {
-			var top = ceil(title.font.lineHeight + hintYPadding)
-			top = min(top, maxTopInset())
-			r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
-		}
-		return CGRectIntegral(r)
-	}
-	
-	override func clearButtonRectForBounds(bounds:CGRect) -> CGRect {
-		var r = super.clearButtonRectForBounds(bounds)
-		if !text.isEmpty {
-			var top = ceil(title.font.lineHeight + hintYPadding)
-			top = min(top, maxTopInset())
-			r = CGRect(x:r.origin.x, y:r.origin.y + (top * 0.5), width:r.size.width, height:r.size.height)
-		}
-		return CGRectIntegral(r)
-	}
-	
-	// MARK:- Public Methods
-	
-	// MARK:- Private Methods
-	private func setup() {
-		borderStyle = UITextBorderStyle.None
-		titleActiveTextColour = tintColor
-		// Set up title label
-		title.alpha = 0.0
-		title.font = titleFont
-		title.textColor = titleTextColour
-		if let str = placeholder {
-			if !str.isEmpty {
-				title.text = str
-				title.sizeToFit()
-			}
-		}
-		self.addSubview(title)
-	}
-
-	private func maxTopInset()->CGFloat {
-		return max(0, floor(bounds.size.height - font.lineHeight - 4.0))
-	}
-	
-    func setTitlePositionForTextAlignment() {
-		var r = textRectForBounds(bounds)
-		var x = r.origin.x
-		if textAlignment == NSTextAlignment.Center {
-			x = r.origin.x + (r.size.width * 0.5) - title.frame.size.width
-		} else if textAlignment == NSTextAlignment.Right {
-			x = r.origin.x + r.size.width - title.frame.size.width
-		}
-		title.frame = CGRect(x:x, y:title.frame.origin.y, width:frame.size.width, height:title.frame.size.height)
-	}
-	
-	func showTitle(animated:Bool) {
-		let dur = animated ? animationDuration : 0
-		UIView.animateWithDuration(dur, delay:0, options: UIViewAnimationOptions.BeginFromCurrentState|UIViewAnimationOptions.CurveEaseOut, animations:{
-				// Animation
-				self.title.alpha = 1.0
-				var r = self.title.frame
-				r.origin.y = self.titleYPadding
-				self.title.frame = r
-			}, completion:nil)
-	}
-	
-	func hideTitle(animated:Bool) {
-		let dur = animated ? animationDuration : 0
-		UIView.animateWithDuration(dur, delay:0, options: UIViewAnimationOptions.BeginFromCurrentState|UIViewAnimationOptions.CurveEaseIn, animations:{
-			// Animation
-			self.title.alpha = 0.0
-			var r = self.title.frame
-			r.origin.y = self.title.font.lineHeight + self.hintYPadding
-			self.title.frame = r
-			}, completion:nil)
-	}
-    
-    var oldTitleFontSize: CGFloat?
-    var originalTitleActiveColor: UIColor?
-    var originalTitleColor: UIColor?
-    
-    func setErrorUI() {
-        if let fieldName  = placeholder {
-            if oldTitleFontSize == nil {
-                if let fSize = title.font?.pointSize {
-                    oldTitleFontSize = fSize
-                }
+    // MARK:- Properties
+    override var accessibilityLabel: String! {
+        get {
+            if text.isEmpty {
+                return title.text
+            } else {
+                return text
             }
-            title.text = "\(fieldName) can't be blank"
-            title.font = title.font.fontWithSize(6)
         }
-        
-        if originalTitleColor == nil {
-            originalTitleColor = titleTextColour.copy() as? UIColor
+        set {
+            self.accessibilityLabel = newValue
         }
-        if originalTitleActiveColor == nil {
-            originalTitleActiveColor = titleActiveTextColour.copy() as? UIColor
+    }
+
+    override var placeholder: String? {
+        didSet {
+            if title.text == nil {
+                title.text = placeholder
+                title.sizeToFit()
+            }
         }
-        titleActiveTextColour = UIColor.redColor()
-        titleTextColour = UIColor.redColor()
+    }
+
+    override var attributedPlaceholder: NSAttributedString? {
+        didSet {
+            title.text = attributedPlaceholder?.string
+            title.sizeToFit()
+        }
+    }
+
+    var titleFont: UIFont = UIFont.systemFontOfSize(12.0) {
+        didSet {
+            title.font = titleFont
+        }
+    }
+
+    @IBInspectable var hintYPadding: CGFloat = 0.0
+
+    @IBInspectable var titleYPadding: CGFloat = 0.0 {
+        didSet {
+            var r = title.frame
+            r.origin.y = titleYPadding
+            title.frame = r
+        }
+    }
+
+    @IBInspectable var titleTextColour: UIColor = UIColor.grayColor() {
+        didSet {
+            if !isFirstResponder() {
+                title.textColor = titleTextColour
+            }
+        }
+    }
+
+    @IBInspectable var titleActiveTextColour: UIColor! {
+        didSet {
+            if isFirstResponder() {
+                title.textColor = titleActiveTextColour
+            }
+        }
+    }
+
+    @IBInspectable var errorTextColor: UIColor = UIColor.redColor()
+    @IBInspectable var errorFontSize: CGFloat = 7.5
+    @IBInspectable var isRequired: Bool = false
+
+
+
+
+    // MARK:- Init
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        self.delegate  = self
+        setup()
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.delegate  = self
+        setup()
+    }
+
+    
+    func textFieldDidBeginEditing(textField: UITextField) {
+        clearError()
+          setTitlePositionForTextAlignment()
         let isResp = isFirstResponder()
-        canShowTitleAlways = true
         showTitle(isResp)
-        
+        if originalPlaceHolderText == nil {
+            originalPlaceHolderText = placeholder!
+        }
+        placeholder = ""
     }
     
-    func clearErrorUI() {
-        if let oldSize = oldTitleFontSize {
-            title.font = title.font.fontWithSize(oldSize)
+
+    func textFieldDidEndEditing(textField: UITextField) {
+        placeholder = originalPlaceHolderText
+        let isResp = isFirstResponder()
+          setTitlePositionForTextAlignment()
+        if isRequired {
+            if text.isEmpty {
+                setRequiredError()
+                showTitle(isResp)
+            }else {
+                clearError()
+                hideTitle(isResp)
+            }
+        }else {
+            if !text.isEmpty && !hasError {
+                showTitle(isResp)
+            }else {
+                clearError()
+                hideTitle(isResp)
+            }
         }
-        if let oldColor = originalTitleColor {
-            titleTextColour = oldColor
+
+    }
+
+
+    // MARK:- Overrides
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let isResp = isFirstResponder()
+        setTitlePositionForTextAlignment()
+        if !text.isEmpty && !hasError {
+            placeholder = originalPlaceHolderText
+            title.textColor = titleTextColour
+            showTitle(isResp)
         }
-        if let oldActiveColor = originalTitleActiveColor {
-            titleActiveTextColour = oldActiveColor
+
+    }
+
+    override func textRectForBounds(bounds: CGRect) -> CGRect {
+        var r = super.textRectForBounds(bounds)
+        if !text.isEmpty {
+            var top = ceil(title.font.lineHeight + hintYPadding)
+            top = min(top, maxTopInset())
+            r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
         }
+        return CGRectIntegral(r)
+    }
+
+    override func editingRectForBounds(bounds: CGRect) -> CGRect {
+        var r = super.editingRectForBounds(bounds)
+        if !text.isEmpty {
+            var top = ceil(title.font.lineHeight + hintYPadding)
+            top = min(top, maxTopInset())
+            r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
+        }
+        return CGRectIntegral(r)
+    }
+
+    override func clearButtonRectForBounds(bounds: CGRect) -> CGRect {
+        var r = super.clearButtonRectForBounds(bounds)
+        if !text.isEmpty {
+            var top = ceil(title.font.lineHeight + hintYPadding)
+            top = min(top, maxTopInset())
+            r = CGRect(x: r.origin.x, y: r.origin.y + (top * 0.5), width: r.size.width, height: r.size.height)
+        }
+        return CGRectIntegral(r)
+    }
+
+    // MARK:- Public Methods
+
+    // MARK:- Private Methods
+    private func setup() {
+        borderStyle = UITextBorderStyle.None
+        titleActiveTextColour = tintColor
+        // Set up title label
+        title.alpha = 0.0
+        title.font = titleFont
+        title.textColor = titleTextColour
+        if let str = placeholder {
+            if !str.isEmpty {
+                title.text = str
+                title.sizeToFit()
+            }
+        }
+        self.addSubview(title)
+    }
+
+    private func maxTopInset() -> CGFloat {
+        return max(0, floor(bounds.size.height - font.lineHeight - 4.0))
+    }
+
+    func setTitlePositionForTextAlignment() {
+        var r = textRectForBounds(bounds)
+        var x = r.origin.x
+        if textAlignment == NSTextAlignment.Center {
+            x = r.origin.x + (r.size.width * 0.5) - title.frame.size.width
+        } else if textAlignment == NSTextAlignment.Right {
+            x = r.origin.x + r.size.width - title.frame.size.width
+        }
+        title.frame = CGRect(x: x, y: title.frame.origin.y, width: frame.size.width, height: title.frame.size.height)
+    }
+
+    func showTitle(animated: Bool) {
+        let dur = animated ? animationDuration : 0
+        UIView.animateWithDuration(dur, delay: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.CurveEaseOut, animations: {
+            // Animation
+            self.title.alpha = 1.0
+            var r = self.title.frame
+            r.origin.y = self.titleYPadding
+            self.title.frame = r
+        }, completion: nil)
+    }
+
+    func hideTitle(animated: Bool) {
+        let dur = animated ? animationDuration : 0
+        UIView.animateWithDuration(dur, delay: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.CurveEaseIn, animations: {
+            // Animation
+            self.title.alpha = 0.0
+            var r = self.title.frame
+            r.origin.y = self.title.font.lineHeight + self.hintYPadding
+            self.title.frame = r
+        }, completion: nil)
+    }
+
+    private func setRequiredError () {
+        if let fieldName = placeholder {
+            title.text = "\(fieldName) can't be blank"
+        }
+        title.font = title.font.fontWithSize(errorFontSize)
+        title.textColor = errorTextColor
+        hasError = true
+        let isResp = isFirstResponder()
+        showTitle(isResp)
+
+    }
+
+
+//    func showError() {
+//        if let fieldName = placeholder {
+//            if oldTitleFontSize == nil {
+//                if let fSize = title.font?.pointSize {
+//                    oldTitleFontSize = fSize
+//                }
+//            }
+//            title.text = "\(fieldName) can't be blank"
+//            title.font = title.font.fontWithSize(6)
+//        }
+//
+////        title.textColor = errorTextColor? ?? titleTextColour
+//        let isResp = isFirstResponder()
+//        hasError = true
+//        showTitle(isResp)
+//
+//    }
+
+    func clearError() {
         title.text = self.placeholder!
-        canShowTitleAlways = false
+        title.textColor = titleTextColour
+        title.font = self.font
+        hasError = false
     }
-    
+
 }
