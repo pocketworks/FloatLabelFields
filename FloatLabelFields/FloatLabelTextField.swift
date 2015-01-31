@@ -18,7 +18,6 @@ import UIKit
     let animationDuration = 0.3
     var title = UILabel()
     private var hasError: Bool  = false
-    private var hasShownError = false
     private var originalPlaceHolderText: String?
     private var validators =  [String: Any]()
 
