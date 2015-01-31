@@ -242,11 +242,9 @@ import UIKit
 
     private func validateAllRules() {
         // Check required field rule
-        if isRequired {
-            if text.isEmpty {
-                setRequiredError()
-                return
-            }
+        if isRequired && text.isEmpty {
+            setRequiredError()
+            return
         }
         // Check if its a email field
         if isEmail && !text.isEmail() {
