@@ -20,6 +20,7 @@ import UIKit
     var hasError = false
     private var hasShownError = false
     private var originalPlaceHolderText: String?
+    private var validators =  [String: Any]()
 
     // MARK:- Properties
     override var accessibilityLabel: String! {
@@ -86,6 +87,7 @@ import UIKit
     @IBInspectable var errorTextColor: UIColor = UIColor.redColor()
     @IBInspectable var errorFontSize: CGFloat = 7.5
     @IBInspectable var isRequired: Bool = false
+    @IBInspectable var isEmail: Bool = false
 
 
 
@@ -106,7 +108,6 @@ import UIKit
     
     func textFieldDidBeginEditing(textField: UITextField) {
         clearError()
-          setTitlePositionForTextAlignment()
         let isResp = isFirstResponder()
         showTitle(isResp)
         if originalPlaceHolderText == nil {
@@ -118,25 +119,41 @@ import UIKit
 
     func textFieldDidEndEditing(textField: UITextField) {
         placeholder = originalPlaceHolderText
-        let isResp = isFirstResponder()
-          setTitlePositionForTextAlignment()
+        handleRules()
+    }
+
+    func handleRules() {
+        // Check required field rule
         if isRequired {
             if text.isEmpty {
                 setRequiredError()
-                showTitle(isResp)
-            }else {
-                clearError()
-                hideTitle(isResp)
+                return
             }
-        }else {
-            if !text.isEmpty && !hasError {
-                showTitle(isResp)
-            }else {
-                clearError()
-                hideTitle(isResp)
+        }
+        // Check if its a email field
+        if isEmail && !text.isEmail() {
+            setEmailError()
+            return
+        }
+
+        // check all the custom validators
+
+        for (message,validator) in validators {
+            if (validator as? (() -> Bool) != nil) {
+                hasError = !(validator as () -> Bool)()
+                if hasError {
+                    setCustomError(message)
+                    return
+                }
             }
         }
 
+        let isResp = isFirstResponder()
+        if hasError {
+            showTitle(isResp)
+        }else {
+            clearError()
+        }
     }
 
 
@@ -239,10 +256,26 @@ import UIKit
         }, completion: nil)
     }
 
+
     private func setRequiredError () {
         if let fieldName = placeholder {
             title.text = "\(fieldName) can't be blank"
         }
+        showError()
+    }
+
+    private func setEmailError() {
+        title.text = "Invalid Email"
+        showError()
+    }
+
+    private func setCustomError(error: String) {
+        title.text = error
+        showError()
+    }
+
+
+    func showError() {
         title.font = title.font.fontWithSize(errorFontSize)
         title.textColor = errorTextColor
         hasError = true
@@ -251,30 +284,19 @@ import UIKit
 
     }
 
-
-//    func showError() {
-//        if let fieldName = placeholder {
-//            if oldTitleFontSize == nil {
-//                if let fSize = title.font?.pointSize {
-//                    oldTitleFontSize = fSize
-//                }
-//            }
-//            title.text = "\(fieldName) can't be blank"
-//            title.font = title.font.fontWithSize(6)
-//        }
-//
-////        title.textColor = errorTextColor? ?? titleTextColour
-//        let isResp = isFirstResponder()
-//        hasError = true
-//        showTitle(isResp)
-//
-//    }
-
     func clearError() {
         title.text = self.placeholder!
         title.textColor = titleTextColour
         title.font = self.font
         hasError = false
+    }
+
+    func addValidator(message:String,regex:NSRegularExpression) {
+        validators[message] = regex
+    }
+
+    func addValidator(message:String,validator condtion:  () -> Bool) {
+        validators[message] = condtion
     }
 
 }
