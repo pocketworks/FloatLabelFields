@@ -154,6 +154,36 @@ import UIKit
 
     // MARK:- Public Methods
 
+
+    func textFieldDidBeginEditing(textField: UITextField) {
+        clearError()
+        let isResp = isFirstResponder()
+        showTitle(isResp)
+        if originalPlaceHolderText == nil {
+            originalPlaceHolderText = placeholder!
+        }
+        placeholder = ""
+    }
+
+
+    func textFieldDidEndEditing(textField: UITextField) {
+        placeholder = originalPlaceHolderText
+        validateAllRules()
+    }
+
+    func addValidator(message:String,regex:NSRegularExpression) {
+        validators[message] = regex
+    }
+
+    func addValidator(message:String,validator condtion:  () -> Bool) {
+        validators[message] = condtion
+    }
+
+    func validate() -> Bool {
+        validateAllRules()
+        return hasError
+    }
+
     // MARK:- Private Methods
     private func setup() {
         borderStyle = UITextBorderStyle.None
@@ -175,7 +205,7 @@ import UIKit
         return max(0, floor(bounds.size.height - font.lineHeight - 4.0))
     }
 
-    func setTitlePositionForTextAlignment() {
+    private func setTitlePositionForTextAlignment() {
         var r = textRectForBounds(bounds)
         var x = r.origin.x
         if textAlignment == NSTextAlignment.Center {
@@ -209,21 +239,6 @@ import UIKit
     }
 
 
-     func textFieldDidBeginEditing(textField: UITextField) {
-        clearError()
-        let isResp = isFirstResponder()
-        showTitle(isResp)
-        if originalPlaceHolderText == nil {
-            originalPlaceHolderText = placeholder!
-        }
-        placeholder = ""
-    }
-
-
-    func textFieldDidEndEditing(textField: UITextField) {
-        placeholder = originalPlaceHolderText
-        validateAllRules()
-    }
 
     private func validateAllRules() {
         // Check required field rule
@@ -294,17 +309,6 @@ import UIKit
         hasError = false
     }
 
-    func addValidator(message:String,regex:NSRegularExpression) {
-        validators[message] = regex
-    }
 
-    func addValidator(message:String,validator condtion:  () -> Bool) {
-        validators[message] = condtion
-    }
-
-    func validate() -> Bool {
-        validateAllRules()
-        return hasError
-    }
 
 }
