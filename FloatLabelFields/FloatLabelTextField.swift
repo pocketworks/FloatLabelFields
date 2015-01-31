@@ -271,6 +271,9 @@ import UIKit
             showTitle(isResp)
         }else {
             clearError()
+            if text.isEmpty {
+                hideTitle(isResp)
+            }
         }
     }
 
