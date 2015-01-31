@@ -17,7 +17,7 @@ import UIKit
 @IBDesignable class FloatLabelTextField: UITextField,UITextFieldDelegate {
     let animationDuration = 0.3
     var title = UILabel()
-    var hasError = false
+    private var hasError: Bool  = false
     private var hasShownError = false
     private var originalPlaceHolderText: String?
     private var validators =  [String: Any]()
@@ -106,55 +106,7 @@ import UIKit
     }
 
     
-    func textFieldDidBeginEditing(textField: UITextField) {
-        clearError()
-        let isResp = isFirstResponder()
-        showTitle(isResp)
-        if originalPlaceHolderText == nil {
-            originalPlaceHolderText = placeholder!
-        }
-        placeholder = ""
-    }
-    
 
-    func textFieldDidEndEditing(textField: UITextField) {
-        placeholder = originalPlaceHolderText
-        handleRules()
-    }
-
-    func handleRules() {
-        // Check required field rule
-        if isRequired {
-            if text.isEmpty {
-                setRequiredError()
-                return
-            }
-        }
-        // Check if its a email field
-        if isEmail && !text.isEmail() {
-            setEmailError()
-            return
-        }
-
-        // check all the custom validators
-
-        for (message,validator) in validators {
-            if (validator as? (() -> Bool) != nil) {
-                hasError = !(validator as () -> Bool)()
-                if hasError {
-                    setCustomError(message)
-                    return
-                }
-            }
-        }
-
-        let isResp = isFirstResponder()
-        if hasError {
-            showTitle(isResp)
-        }else {
-            clearError()
-        }
-    }
 
 
     // MARK:- Overrides
@@ -234,7 +186,7 @@ import UIKit
         title.frame = CGRect(x: x, y: title.frame.origin.y, width: frame.size.width, height: title.frame.size.height)
     }
 
-    func showTitle(animated: Bool) {
+    private func showTitle(animated: Bool) {
         let dur = animated ? animationDuration : 0
         UIView.animateWithDuration(dur, delay: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.CurveEaseOut, animations: {
             // Animation
@@ -245,7 +197,7 @@ import UIKit
         }, completion: nil)
     }
 
-    func hideTitle(animated: Bool) {
+    private func hideTitle(animated: Bool) {
         let dur = animated ? animationDuration : 0
         UIView.animateWithDuration(dur, delay: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.CurveEaseIn, animations: {
             // Animation
@@ -254,6 +206,57 @@ import UIKit
             r.origin.y = self.title.font.lineHeight + self.hintYPadding
             self.title.frame = r
         }, completion: nil)
+    }
+
+
+     func textFieldDidBeginEditing(textField: UITextField) {
+        clearError()
+        let isResp = isFirstResponder()
+        showTitle(isResp)
+        if originalPlaceHolderText == nil {
+            originalPlaceHolderText = placeholder!
+        }
+        placeholder = ""
+    }
+
+
+    func textFieldDidEndEditing(textField: UITextField) {
+        placeholder = originalPlaceHolderText
+        validateAllRules()
+    }
+
+    private func validateAllRules() {
+        // Check required field rule
+        if isRequired {
+            if text.isEmpty {
+                setRequiredError()
+                return
+            }
+        }
+        // Check if its a email field
+        if isEmail && !text.isEmail() {
+            setEmailError()
+            return
+        }
+
+        // check all the custom validators
+
+        for (message,validator) in validators {
+            if (validator as? (() -> Bool) != nil) {
+                hasError = !(validator as () -> Bool)()
+                if hasError {
+                    setCustomError(message)
+                    return
+                }
+            }
+        }
+
+        let isResp = isFirstResponder()
+        if hasError {
+            showTitle(isResp)
+        }else {
+            clearError()
+        }
     }
 
 
@@ -275,7 +278,7 @@ import UIKit
     }
 
 
-    func showError() {
+    private func showError() {
         title.font = title.font.fontWithSize(errorFontSize)
         title.textColor = errorTextColor
         hasError = true
@@ -284,7 +287,7 @@ import UIKit
 
     }
 
-    func clearError() {
+    private func clearError() {
         title.text = self.placeholder!
         title.textColor = titleTextColour
         title.font = self.font
@@ -297,6 +300,11 @@ import UIKit
 
     func addValidator(message:String,validator condtion:  () -> Bool) {
         validators[message] = condtion
+    }
+
+    func validate() -> Bool {
+        validateAllRules()
+        return hasError
     }
 
 }
