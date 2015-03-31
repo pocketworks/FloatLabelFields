@@ -312,7 +312,15 @@ import UIKit
     }
 
     private func clearError() {
-        title.text = self.placeholder!
+
+        if let pHolder = placeholder {
+            if pHolder != "" {
+                title.text = pHolder
+            }
+            else if let orgHolder = originalPlaceHolderText {
+                title.text = orgHolder
+            }
+        }
         title.textColor = titleTextColour
         title.font = self.font
         hasError = false
