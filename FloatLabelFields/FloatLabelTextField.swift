@@ -167,7 +167,8 @@ import UIKit
 
     func textFieldDidEndEditing(textField: UITextField) {
         placeholder = originalPlaceHolderText
-        validateAllRules()
+        hideTitle(false)
+//        validateAllRules()
     }
 
     func addValidator(message:String,regex:NSRegularExpression) {
@@ -283,9 +284,16 @@ import UIKit
 
 
     private func setRequiredError () {
-        if let fieldName = placeholder {
-            title.text = "\(fieldName) can't be blank"
+        var fieldName = ""
+        if let pHolder = placeholder {
+            if pHolder != "" {
+                fieldName = pHolder
+            }
+            else if let orgHolder = originalPlaceHolderText {
+                fieldName = orgHolder
+            }
         }
+        title.text = "\(fieldName) can't be blank"
         showError()
     }
 
@@ -301,7 +309,7 @@ import UIKit
 
 
     private func showError() {
-        title.font = title.font.fontWithSize(errorFontSize)
+        title.font = self.font.fontWithSize(errorFontSize)
         title.textColor = errorTextColor
         hasError = true
         let isResp = isFirstResponder()
