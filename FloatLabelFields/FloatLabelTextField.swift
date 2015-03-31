@@ -122,32 +122,26 @@ import UIKit
     }
 
     override func textRectForBounds(bounds: CGRect) -> CGRect {
-        var r = super.textRectForBounds(bounds)
-        if !text.isEmpty {
+        var r = super.editingRectForBounds(bounds)
             var top = ceil(title.font.lineHeight + hintYPadding)
             top = min(top, maxTopInset())
             r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
-        }
         return CGRectIntegral(r)
     }
 
     override func editingRectForBounds(bounds: CGRect) -> CGRect {
         var r = super.editingRectForBounds(bounds)
-        if !text.isEmpty {
             var top = ceil(title.font.lineHeight + hintYPadding)
             top = min(top, maxTopInset())
             r = UIEdgeInsetsInsetRect(r, UIEdgeInsetsMake(top, 0.0, 0.0, 0.0))
-        }
         return CGRectIntegral(r)
     }
 
     override func clearButtonRectForBounds(bounds: CGRect) -> CGRect {
         var r = super.clearButtonRectForBounds(bounds)
-        if !text.isEmpty {
             var top = ceil(title.font.lineHeight + hintYPadding)
             top = min(top, maxTopInset())
             r = CGRect(x: r.origin.x, y: r.origin.y + (top * 0.5), width: r.size.width, height: r.size.height)
-        }
         return CGRectIntegral(r)
     }
 
