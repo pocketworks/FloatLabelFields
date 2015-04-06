@@ -153,7 +153,9 @@ import UIKit
         let isResp = isFirstResponder()
         showTitle(isResp)
         if originalPlaceHolderText == nil {
-            originalPlaceHolderText = placeholder!
+             if let pHolder = placeholder {
+                originalPlaceHolderText = pHolder
+            }
         }
         placeholder = ""
     }
