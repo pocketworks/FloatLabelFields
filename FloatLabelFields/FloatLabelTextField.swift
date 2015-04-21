@@ -253,11 +253,11 @@ import UIKit
         for (message,validator) in validators {
             //  check the predicate
             if (validator as? (() -> Bool) != nil) {
-                hasError = !(validator as () -> Bool)()
+                hasError = !(validator as! () -> Bool)()
             } else {
                 // check the regex
                 let regex = validator as? NSRegularExpression
-                hasError = !(regex?.matchesInString(self.text, options: nil, range: NSMakeRange(0, countElements(self.text))) != nil)
+                hasError = !(regex?.matchesInString(self.text, options: nil, range: NSMakeRange(0, count(self.text))) != nil)
             }
             if hasError {
                 setCustomError(message)

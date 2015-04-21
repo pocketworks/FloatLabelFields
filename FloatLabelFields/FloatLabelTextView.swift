@@ -83,10 +83,10 @@ import UIKit
 		setup()
 	}
 	
-	override init(frame:CGRect) {
-		super.init(frame:frame)
-		setup()
-	}
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
+        setup()
+    }
 	
 	deinit {
 		if !isIB {
