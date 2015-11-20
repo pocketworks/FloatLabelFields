@@ -17,9 +17,18 @@
 
 import UIKit
 
-@IBDesignable class FloatLabelTextField: UITextField {
+@IBDesignable class FloatLabelTextField: UITextField, UITextFieldDelegate {
 	let animationDuration = 0.3
 	var title = UILabel()
+    private var hasError: Bool  = false
+    private var originalPlaceHolderText: String?
+
+    @IBInspectable var errorTextColor: UIColor = UIColor.redColor()
+    @IBInspectable var errorFontSize: CGFloat = 7.5
+    @IBInspectable var isRequired: Bool = false
+    @IBInspectable var isEmail: Bool = false
+    private var validators =  [String: Any]()
+
 	
 	// MARK:- Properties
 	override var accessibilityLabel:String? {
@@ -85,11 +94,13 @@ import UIKit
 	// MARK:- Init
 	required init?(coder aDecoder:NSCoder) {
 		super.init(coder:aDecoder)!
+        self.delegate  = self
 		setup()
 	}
 	
 	override init(frame:CGRect) {
 		super.init(frame:frame)
+        self.delegate  = self
 		setup()
 	}
 	
@@ -198,4 +209,108 @@ import UIKit
 			self.title.frame = r
 			}, completion:nil)
 	}
+    
+    func addValidator(message:String,regex:NSRegularExpression) {
+        validators[message] = regex
+    }
+    
+    func addValidator(message:String,validator condtion:  () -> Bool) {
+        validators[message] = condtion
+    }
+    
+    func validate() -> Bool {
+        validateAllRules()
+        return hasError
+    }
+    
+    private func validateAllRules() {
+        // Check required field rule
+        if isRequired && text!.isEmpty {
+            setRequiredError()
+            return
+        }
+        // Check if its a email field
+        if isEmail && !text!.isEmail() {
+            setEmailError()
+            return
+        }
+        
+        // check all the custom validators
+        
+        for (message,validator) in validators {
+            //  check the predicate
+            if (validator as? (() -> Bool) != nil) {
+                hasError = !(validator as! () -> Bool)()
+            } else {
+                // check the regex
+                let regex = validator as? NSRegularExpression
+                hasError = !(regex?.matchesInString(self.text!, options: NSMatchingOptions.ReportProgress, range: NSMakeRange(0, self.text!.length)) != nil)
+            }
+            if hasError {
+                setCustomError(message)
+                return
+            }
+            
+        }
+        
+        
+        let isResp = isFirstResponder()
+        if hasError {
+            showTitle(isResp)
+        }else {
+            clearError()
+            if text!.isEmpty {
+                hideTitle(isResp)
+            }
+        }
+    }
+    
+    private func setRequiredError () {
+        var fieldName = ""
+        if let pHolder = placeholder {
+            if pHolder != "" {
+                fieldName = pHolder
+            }
+            else if let orgHolder = originalPlaceHolderText {
+                fieldName = orgHolder
+            }
+        }
+        title.text = "\(fieldName) can't be blank"
+        showError()
+    }
+    
+    private func setEmailError() {
+        title.text = "Invalid Email"
+        showError()
+    }
+    
+    private func setCustomError(error: String) {
+        title.text = error
+        showError()
+    }
+
+    private func showError() {
+        title.font = self.font!.fontWithSize(errorFontSize)
+        title.textColor = errorTextColor
+        hasError = true
+        let isResp = isFirstResponder()
+        showTitle(isResp)
+        
+    }
+    
+    private func clearError() {
+        
+        if let pHolder = placeholder {
+            if pHolder != "" {
+                title.text = pHolder
+            }
+            else if let orgHolder = originalPlaceHolderText {
+                title.text = orgHolder
+            }
+        }
+        title.textColor = titleTextColour
+        title.font = self.font
+        hasError = false
+    }
+
 }
