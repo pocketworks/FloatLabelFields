@@ -104,6 +104,10 @@ import UIKit
         setup()
     }
     
+    
+    
+    
+    
     // MARK:- Overrides
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -205,12 +209,7 @@ import UIKit
         } else if textAlignment == NSTextAlignment.Right {
             x = r.origin.x + r.size.width - title.frame.size.width
         }
-        
-        let frameToSet = CGRect(x: x, y: title.frame.origin.y, width: frame.size.width, height: title.frame.size.height)
-
-        if CGRectEqualToRect(title.frame, frameToSet) == false {
-            title.frame = frameToSet
-        }
+        title.frame = CGRect(x: x, y: title.frame.origin.y, width: frame.size.width, height: title.frame.size.height)
     }
     
     private func showTitle(animated: Bool) {
