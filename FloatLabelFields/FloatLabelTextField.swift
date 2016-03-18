@@ -14,7 +14,7 @@
 
 import UIKit
 
-@IBDesignable class FloatLabelTextField: UITextField,UITextFieldDelegate {
+@IBDesignable public class FloatLabelTextField: UITextField,UITextFieldDelegate {
     let animationDuration = 0.3
     var title = UILabel()
     private var hasError: Bool  = false
@@ -22,7 +22,7 @@ import UIKit
     private var validators =  [String: Any]()
     
     // MARK:- Properties
-    override var accessibilityLabel: String! {
+    override public var accessibilityLabel: String! {
         get {
             if text!.isEmpty {
                 return title.text
@@ -35,7 +35,7 @@ import UIKit
         }
     }
     
-    override var placeholder: String? {
+    override public var placeholder: String? {
         didSet {
             if title.text == nil {
                 title.text = placeholder
@@ -44,7 +44,7 @@ import UIKit
         }
     }
     
-    override var attributedPlaceholder: NSAttributedString? {
+    override public var attributedPlaceholder: NSAttributedString? {
         didSet {
             title.text = attributedPlaceholder?.string
             title.sizeToFit()
@@ -85,14 +85,14 @@ import UIKit
     
     @IBInspectable var errorTextColor: UIColor = UIColor.redColor()
     @IBInspectable var errorFontSize: CGFloat = 7.5
-    @IBInspectable var isRequired: Bool = false
+    @IBInspectable public var isRequired: Bool = false
     @IBInspectable var isEmail: Bool = false
     
     
     
     
     // MARK:- Init
-    required init(coder aDecoder: NSCoder) {
+    required public init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
         self.delegate  = self
         setup()
@@ -109,7 +109,7 @@ import UIKit
     
     
     // MARK:- Overrides
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         super.layoutSubviews()
         let isResp = isFirstResponder()
         setTitlePositionForTextAlignment()
@@ -121,7 +121,7 @@ import UIKit
         
     }
     
-    override func textRectForBounds(bounds: CGRect) -> CGRect {
+    override public func textRectForBounds(bounds: CGRect) -> CGRect {
         var r = super.editingRectForBounds(bounds)
         var top = ceil(title.font.lineHeight + hintYPadding)
         top = min(top, maxTopInset())
@@ -129,7 +129,7 @@ import UIKit
         return CGRectIntegral(r)
     }
     
-    override func editingRectForBounds(bounds: CGRect) -> CGRect {
+    override public func editingRectForBounds(bounds: CGRect) -> CGRect {
         var r = super.editingRectForBounds(bounds)
         var top = ceil(title.font.lineHeight + hintYPadding)
         top = min(top, maxTopInset())
@@ -137,7 +137,7 @@ import UIKit
         return CGRectIntegral(r)
     }
     
-    override func clearButtonRectForBounds(bounds: CGRect) -> CGRect {
+    override public func clearButtonRectForBounds(bounds: CGRect) -> CGRect {
         var r = super.clearButtonRectForBounds(bounds)
         var top = ceil(title.font.lineHeight + hintYPadding)
         top = min(top, maxTopInset())
@@ -148,7 +148,7 @@ import UIKit
     // MARK:- Public Methods
     
     
-    func textFieldDidBeginEditing(textField: UITextField) {
+    public func textFieldDidBeginEditing(textField: UITextField) {
         clearError()
         let isResp = isFirstResponder()
         showTitle(isResp)
@@ -161,7 +161,7 @@ import UIKit
     }
     
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    public func textFieldDidEndEditing(textField: UITextField) {
         placeholder = originalPlaceHolderText
         hideTitle(false)
         //        validateAllRules()
