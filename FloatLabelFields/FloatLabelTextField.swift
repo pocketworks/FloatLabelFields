@@ -3,13 +3,16 @@
 //  FloatLabelFields
 //
 //  Created by Fahim Farook on 28/11/14.
-//  Copyright (c) 2014 RookSoft Ltd. All rights reserved.
+//  Copyright (c) 2015 RookSoft Ltd & Myles Ringle. All rights reserved.
 //
 //  Original Concept by Matt D. Smith
 //  http://dribbble.com/shots/1254439--GIF-Mobile-Form-Interaction?list=users
 //
 //  Objective-C version by Jared Verdi
 //  https://github.com/jverdi/JVFloatLabeledTextField
+//
+//
+//  Updated for Swift 2.0 by Myles Ringle on 15/10/15.
 //
 
 import UIKit
@@ -95,11 +98,11 @@ import UIKit
     required public init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
         self.delegate  = self
-        setup()
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+		setup()
+	}
+	
+	override init(frame:CGRect) {
+		super.init(frame:frame)
         self.delegate  = self
         setup()
     }
@@ -278,7 +281,6 @@ import UIKit
         }
     }
     
-    
     private func setRequiredError () {
         var fieldName = ""
         if let pHolder = placeholder {
@@ -302,8 +304,7 @@ import UIKit
         title.text = error
         showError()
     }
-    
-    
+
     private func showError() {
         title.font = self.font!.fontWithSize(errorFontSize)
         title.textColor = errorTextColor
@@ -327,7 +328,5 @@ import UIKit
         title.font = self.font
         hasError = false
     }
-    
-    
-    
+
 }
